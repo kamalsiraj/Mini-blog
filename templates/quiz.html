@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soal Matematika</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Soal: {{ soal.soal }}</h2>
+    <form action="/submit" method="POST">
+        <input type="hidden" name="soal_id" value="{{ soal.id }}">
+        {{ form.hidden_tag() }}
+        {{ form.jawaban.label }}: {{ form.jawaban() }}
+        <br>
+        {{ form.submit() }}
+    </form>
+</body>
+</html>
