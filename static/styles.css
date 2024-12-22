@@ -1,34 +1,90 @@
+/* Latar belakang halaman */
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
+    background: linear-gradient(to right, #ff7e5f, #feb47b); /* Gradient latar belakang */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #333; /* Warna teks default */
 }
 
-h1 {
-    text-align: center;
-    color: #4CAF50;
-}
-
-form {
-    width: 300px;
-    margin: 0 auto;
-}
-
-input[type="text"], select {
+/* Container dengan latar belakang putih */
+.container {
+    max-width: 400px;
     width: 100%;
-    padding: 8px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
+/* Warna untuk judul */
+h1 {
+    font-size: 24px;
+    color: #ff6347; /* Warna merah cerah untuk judul */
+    margin-bottom: 20px;
+}
+
+/* Warna untuk label */
+label {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+/* Warna untuk input text (jawaban) */
+input[type="text"] {
+    padding: 12px;
+    font-size: 16px;
+    width: calc(100% - 24px);
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    transition: border 0.3s ease, background-color 0.3s ease;
+}
+
+/* Warna input saat fokus */
+input[type="text"]:focus {
+    border-color: #ff6347; /* Border merah cerah saat fokus */
+    background-color: #fff7f0; /* Latar belakang menjadi sangat terang saat fokus */
+    outline: none;
+}
+
+/* Warna untuk tombol */
 button {
-    padding: 10px;
-    background-color: #4CAF50;
+    background-color: #007BFF;
     color: white;
     border: none;
-    width: 100%;
+    padding: 12px 25px;
+    font-size: 18px;
+    border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
+/* Efek hover pada tombol */
 button:hover {
-    background-color: #45a049;
+    background-color: #0056b3; /* Biru lebih gelap saat hover */
+}
+
+/* Styling tambahan untuk form setelah jawaban dikirim (opsional) */
+form.sent {
+    background-color: #e0ffe0; /* Warna latar belakang hijau muda setelah jawaban terkirim */
+    border: 2px solid #4CAF50; /* Border hijau untuk menunjukkan pengiriman berhasil */
+}
+
+#timer {
+    font-size: 18px;
+    color: red;
+    margin-top: 10px;
+    text-align: center;
 }

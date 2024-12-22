@@ -3,17 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soal Matematika</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h2>Soal: {{ soal.soal }}</h2>
-    <form action="/submit" method="POST">
-        <input type="hidden" name="soal_id" value="{{ soal.id }}">
-        {{ form.hidden_tag() }}
-        {{ form.jawaban.label }}: {{ form.jawaban() }}
-        <br>
-        {{ form.submit() }}
-    </form>
+    <div class="container">
+        <h1 id="question">{{ soal['pertanyaan'] }}</h1>
+        <form action="/quiz" method="POST">
+            <input type="hidden" name="soal_id" value="{{ soal['id'] }}">
+            <label for="jawaban">Jawaban:</label>
+            <input type="text" id="jawaban" name="jawaban">
+            <button type="submit">Kirim Jawaban</button>
+        </form>
+        <p id="timer">Sisa Waktu: <span id="time">60</span> detik</p>
+    </div>
+    <script>
+        // Timer countdown
+        let timeLeft = 60; // Set waktu awal 60 detik
+        const timerElement = document.getElementById('time');
+
+        const timer = setInterval(() => {
+            timeLeft -= 1;
+            timerElement.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                alert('Waktu habis!');
+                document.querySelector('form').submit(); // Kirim jawaban kosong otomatis
+            }
+        }, 1000);
+    </script>
 </body>
 </html>

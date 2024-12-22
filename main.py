@@ -1,59 +1,74 @@
-from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from flask import Flask, render_template, request, redirect, session
+import json
+import random
+import time
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'  # Ganti dengan key yang aman
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/soal.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = "secretkey"  # Dibutuhkan untuk menggunakan session
 
-db = SQLAlchemy(app)
-
-# Model Soal
-class Soal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    topik = db.Column(db.String(100), nullable=False)
-    soal = db.Column(db.String(200), nullable=False)
-    jawaban = db.Column(db.String(100), nullable=False)
-
-# Form untuk menjawab soal
-class AnswerForm(FlaskForm):
-    jawaban = StringField('Jawaban', validators=[DataRequired()])
-    submit = SubmitField('Kirim Jawaban')
+# Fungsi untuk memuat soal dari file JSON
+def load_soal():
+    with open('soal.json', 'r') as file:
+        return json.load(file)
 
 @app.route('/')
 def index():
+    # Reset sesi jika kembali ke halaman utama
+    session.clear()
     return render_template('index.html')
 
-@app.route('/start', methods=['POST'])
-def start():
-    topic = request.form['topic']
-    difficulty = request.form['difficulty']
-    
-    soal = Soal.query.filter_by(topik=topic).first()  # Ambil soal pertama berdasarkan topik
-    form = AnswerForm()
-    return render_template('quiz.html', soal=soal, form=form)
+@app.route('/quiz', methods=['GET', 'POST'])
+def quiz():
+    soal_list = load_soal()
 
-@app.route('/submit', methods=['POST'])
-def submit():
-    form = AnswerForm()
-    if form.validate_on_submit():
-        jawaban = form.jawaban.data
-        soal_id = request.form['soal_id']
-        soal = Soal.query.get(soal_id)
-        
-        if jawaban.lower() == soal.jawaban.lower():
-            feedback = "Jawaban Anda Benar!"
+    # Cek apakah sesi sudah ada
+    if 'waktu_mulai' not in session:
+        # Inisialisasi sesi
+        session['waktu_mulai'] = time.time()  # Waktu mulai kuis
+        session['soal_terjawab'] = 0  # Hitung soal yang sudah dijawab
+        session['soal_acak'] = random.sample(soal_list, len(soal_list))  # Soal diacak
+
+    waktu_sekarang = time.time()
+    soal_terjawab = session['soal_terjawab']
+    soal_acak = session['soal_acak']
+
+    # Batas waktu untuk soal saat ini (1 menit per soal)
+    batas_waktu = session['waktu_mulai'] + (soal_terjawab + 1) * 60
+
+    if request.method == 'POST':
+        jawaban_user = request.form['jawaban']
+        soal_id = int(request.form['soal_id'])
+        soal = next((s for s in soal_acak if s["id"] == soal_id), None)
+
+        if waktu_sekarang > batas_waktu:
+            # Jika waktu habis, arahkan ke soal berikutnya
+            session['soal_terjawab'] += 1
+            return redirect('/quiz')  # Soal berikutnya
+
+        if soal and jawaban_user.strip() == str(soal["jawaban"]):
+            # Jika jawaban benar, lanjutkan ke soal berikutnya
+            session['soal_terjawab'] += 1
+            return render_template('result.html', hasil="Jawaban Benar! Lanjut ke soal berikutnya.")
+
         else:
-            feedback = f"Jawaban Anda Salah. Jawaban yang benar adalah: {soal.jawaban}"
-        
-        return render_template('result.html', feedback=feedback, soal=soal)
+            # Jika jawaban salah, arahkan ke soal berikutnya
+            session['soal_terjawab'] += 1
+            return render_template('result.html', hasil="Jawaban Salah! Coba Lagi.")
 
-# Create the database
-with app.app_context():
-    db.create_all()
+    # Cek apakah masih ada soal
+    if soal_terjawab >= len(soal_acak):
+        return render_template('result.html', hasil="Kuis selesai! Anda telah menjawab semua soal.")
+
+    # Pilih soal berikutnya
+    soal = soal_acak[soal_terjawab]
+    waktu_tersisa = int(batas_waktu - waktu_sekarang)
+
+    if waktu_tersisa <= 0:
+        # Jika waktu habis, arahkan ke soal berikutnya
+        session['soal_terjawab'] += 1
+        return redirect('/quiz')  # Soal berikutnya
+
+    return render_template('quiz.html', soal=soal, waktu_tersisa=waktu_tersisa)
 
 if __name__ == '__main__':
     app.run(debug=True)
